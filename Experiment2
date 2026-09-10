@@ -1,0 +1,108 @@
+package q64815;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Scanner;
+
+public class CTJ64815 {
+
+    // Class to represent an edge
+    static class Edge implements Comparable<Edge> {
+        int u, v, weight;
+
+        public Edge(int u, int v, int weight) {
+            this.u = u;
+            this.v = v;
+            this.weight = weight;
+        }
+
+        // Sort edges based on weight
+        @Override
+        public int compareTo(Edge other) {
+            return this.weight - other.weight;
+        }
+    }
+
+    // Find function for Union-Find (with path compression)
+    static int find(int[] parent, int i) {
+        if (parent[i] == i) {
+            return i;
+        }
+        return parent[i] = find(parent, parent[i]);
+    }
+
+    // Union function for Union-Find (by rank)
+    static void union(int[] parent, int[] rank, int x, int y) {
+        int rootX = find(parent, x);
+        int rootY = find(parent, y);
+
+        if (rootX != rootY) {
+            if (rank[rootX] < rank[rootY]) {
+                parent[rootX] = rootY;
+            } else if (rank[rootX] > rank[rootY]) {
+                parent[rootY] = rootX;
+            } else {
+                parent[rootY] = rootX;
+                rank[rootX]++;
+            }
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+
+        if (!scanner.hasNextInt()) return;
+
+        int V = scanner.nextInt();
+        int E = scanner.nextInt();
+
+        List<Edge> edges = new ArrayList<>();
+        for (int i = 0; i < E; i++) {
+            int u = scanner.nextInt();
+            int v = scanner.nextInt();
+            int weight = scanner.nextInt();
+            edges.add(new Edge(u, v, weight));
+        }
+
+        // 1. Sort all edges in non-decreasing order of their weight
+        Collections.sort(edges);
+
+        // Allocate memory for creating V subsets
+        int[] parent = new int[V];
+        int[] rank = new int[V];
+        for (int i = 0; i < V; i++) {
+            parent[i] = i;
+            rank[i] = 0;
+        }
+
+        List<Edge> mst = new ArrayList<>();
+        int totalCost = 0;
+
+        // 2. Iterate through all sorted edges
+        for (Edge edge : edges) {
+            int rootU = find(parent, edge.u);
+            int rootV = find(parent, edge.v);
+
+            // If including this edge does not cause a cycle
+            if (rootU != rootV) {
+                mst.add(edge);
+                totalCost += edge.weight;
+                union(parent, rank, rootU, rootV);
+            }
+            
+            // Optimization: An MST has exactly V-1 edges
+            if (mst.size() == V - 1) {
+                break;
+            }
+        }
+
+        // Output the results
+        for (Edge edge : mst) {
+            System.out.println(edge.u + " " + edge.v + " " + edge.weight);
+        }
+        System.out.println(totalCost);
+
+        scanner.close();
+    }
+}

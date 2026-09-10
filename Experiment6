@@ -1,0 +1,70 @@
+package q64818;
+
+import java.util.Scanner;
+
+public class CTJ64818 {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        
+        // Read the number of vertices
+        if (!scanner.hasNextInt()) return;
+        int v = scanner.nextInt();
+        
+        // Initialize the adjacency matrix
+        int[][] graph = new int[v][v];
+        for (int i = 0; i < v; i++) {
+            for (int j = 0; j < v; j++) {
+                graph[i][j] = scanner.nextInt();
+            }
+        }
+        
+        // Array to keep track of vertices included in MST
+        boolean[] mstSet = new boolean[v];
+        
+        // Array to store the minimum weight edge connecting a vertex to the MST
+        int[] key = new int[v];
+        
+        // Initialize all keys to infinity and mstSet[] to false
+        for (int i = 0; i < v; i++) {
+            key[i] = Integer.MAX_VALUE;
+            mstSet[i] = false;
+        }
+        
+        // Always include the first vertex in MST
+        key[0] = 0;
+        int totalCost = 0;
+        
+        // The MST will have exactly V vertices
+        for (int count = 0; count < v; count++) {
+            // Find the vertex with the minimum key value from the set of vertices not yet included in MST
+            int min = Integer.MAX_VALUE, min_index = -1;
+            for (int i = 0; i < v; i++) {
+                if (!mstSet[i] && key[i] < min) {
+                    min = key[i];
+                    min_index = i;
+                }
+            }
+            
+            // Add the picked vertex to the MST Set
+            mstSet[min_index] = true;
+            
+            // Add its key weight to the total cost
+            totalCost += key[min_index];
+            
+            // Update key value of the adjacent vertices of the picked vertex
+            for (int j = 0; j < v; j++) {
+                // graph[min_index][j] is non-zero only for adjacent vertices
+                // mstSet[j] is false for vertices not yet included in MST
+                // Update the key only if graph[min_index][j] is smaller than the current key value
+                if (graph[min_index][j] != 0 && !mstSet[j] && graph[min_index][j] < key[j]) {
+                    key[j] = graph[min_index][j];
+                }
+            }
+        }
+        
+        // Print the total cost of the MST
+        System.out.println(totalCost);
+        
+        scanner.close();
+    }
+}
